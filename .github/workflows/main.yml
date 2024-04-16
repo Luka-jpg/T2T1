@@ -1,0 +1,70 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Packages
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CLIENTES_IP }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+                sudo yum install -y nodejs npm git
+        
+      - name: Create Working Directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CLIENTES_IP }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+              sudo mkdir -p /opt/WorkingDirectoryClientes
+      
+      - name: Clone Repository
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CLIENTES_IP }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+            sudo git clone https://${{ secrets.EC2token}}@github.com/Luka-jpg/CLIENTEST2.git /opt/WorkingDirectoryPagos
+      - name: Install NPM Packages
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CLIENTES_IP }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+              sudo npm install express
+              sudo npm install -g pm2
+      
+      - name: Start Node Service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CLIENTES_IP }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+            if ! pm2 list | grep -q 'app'; then
+            pm2 start -f /opt/WorkingDirectoryClientes/app.js
+            fi
+         
+      - name: Check Status
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.CLIENTES_IP }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+            if pm2 list | grep -q 'app'; then
+            echo "La aplicación está corriendo."
+            else
+            echo "La aplicación no está corriendo."
+            fi
