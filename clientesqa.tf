@@ -74,19 +74,15 @@ resource "aws_instance" "clientesqa_instance" {
     key_name = "clavepem"  # Nombre de tu clave de acceso existente en AWS
 
     # Asociar la instancia con el grupo de seguridad creado o existente
+    # Aquí accedemos al primer (y único) recurso aws_security_group.instance_security_group_custom con índice 0
     vpc_security_group_ids = data.aws_security_group.existing_sg ? [
         data.aws_security_group.existing_sg.id
     ] : [
-        aws_security_group.instance_security_group_custom.id
+        aws_security_group.instance_security_group_custom[0].id
     ]
 
     # Etiquetas para identificar la instancia
     tags = {
         Name = "ORG-CLIENTES-QA"
     }
-}
-
-# Bloque de salida para obtener la dirección IP pública de la instancia
-output "instance_ip_clientesqa" {
-    value = aws_instance.clientesqa_instance.public_ip
 }
