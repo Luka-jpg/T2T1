@@ -18,8 +18,16 @@ provider "aws" {
     secret_key = var.aws_secret_key
 }
 
+# Verifica si el grupo de seguridad ya existe
+data "aws_security_group" "existing_sg" {
+    name = "instance_security_group_custom"
+    vpc_id = "tu-vpc-id"  # Asegúrate de que este sea el ID correcto de tu VPC
+}
+
 # Recurso de grupo de seguridad
 resource "aws_security_group" "instance_security_group_custom" {
+    count = data.aws_security_group.existing_sg ? 0 : 1  # Crear solo si no existe
+
     name = "instance_security_group_custom"
     description = "Custom security group for EC2 instance"
 
@@ -65,8 +73,10 @@ resource "aws_instance" "clientesqa_instance" {
     instance_type = "t2.micro"  # Tipo de instancia
     key_name = "clavepem"  # Nombre de tu clave de acceso existente en AWS
 
-    # Asociar la instancia con el grupo de seguridad creado
-    vpc_security_group_ids = [
+    # Asociar la instancia con el grupo de seguridad creado o existente
+    vpc_security_group_ids = data.aws_security_group.existing_sg ? [
+        data.aws_security_group.existing_sg.id
+    ] : [
         aws_security_group.instance_security_group_custom.id
     ]
 
