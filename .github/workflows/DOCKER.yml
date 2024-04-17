@@ -21,10 +21,15 @@ jobs:
         terraform_version: 1.7.5
         terraform_wrapper: false
 
+    - name: Debug Variables
+      run: |
+        echo "AWS Access Key: ${{ env.aws_access_key }}"
+        echo "AWS Secret Key: ${{ env.aws_secret_key }}"
+
     - name: Terraform Init
       run: terraform init
 
-    - name: Terraform Apply      
+    - name: Terraform Apply
       run: terraform apply -auto-approve -var="aws_access_key=${{ env.aws_access_key }}" -var="aws_secret_key=${{ env.aws_secret_key }}"
 
     - name: Terraform Show
@@ -42,7 +47,7 @@ jobs:
       run: docker build . --file Dockerfile --tag lukytast2/t2t1:K6
 
     - name: Push the Docker image to Docker Hub
-      run: | 
+      run: |
           docker push lukytast2/t2t1:K6
           docker pull lukytast2/t2t1:K6
 
@@ -55,7 +60,7 @@ jobs:
         script: |
             sudo yum -y install docker
             sudo systemctl start docker
-            
+
     - name: Pull y run de Docker
       uses: appleboy/ssh-action@master
       with:
@@ -63,9 +68,9 @@ jobs:
         username: ec2-user
         key: ${{ secrets.CLIENTES_KEY }}
         script: |
-             sudo docker pull lukytast2/t2t1:K6
-             sudo docker run -d -p 8080:8080 lukytast2/t2t1:K6
-      
+            sudo docker pull lukytast2/t2t1:K6
+            sudo docker run -d -p 8080:8080 lukytast2/t2t1:K6
+
     - name: Docker ps
       uses: appleboy/ssh-action@master
       with:
@@ -73,4 +78,4 @@ jobs:
         username: ec2-user
         key: ${{ secrets.CLIENTES_KEY }}
         script: |
-             sudo docker ps
+            sudo docker ps
