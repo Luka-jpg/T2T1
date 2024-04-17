@@ -26,7 +26,7 @@ data "aws_security_group" "existing_sg" {
 
 # Recurso de grupo de seguridad (solo si no existe)
 resource "aws_security_group" "instance_security_group_custom" {
-    count = data.aws_security_group.existing_sg ? 0 : 1  # Solo crea el grupo de seguridad si no existe
+    count = data.aws_security_group.existing_sg.id == null ? 1 : 0  # Solo crea el grupo de seguridad si no existe
 
     name = "instance_security_group_custom"
     description = "Custom security group for EC2 instance"
@@ -74,7 +74,7 @@ resource "aws_instance" "clientesqa_instance" {
     key_name = "clavepem"  # Nombre de tu clave de acceso existente en AWS
 
     # Asociar la instancia con el grupo de seguridad existente o creado
-    vpc_security_group_ids = data.aws_security_group.existing_sg ? [
+    vpc_security_group_ids = data.aws_security_group.existing_sg.id != null ? [
         data.aws_security_group.existing_sg.id
     ] : [
         aws_security_group.instance_security_group_custom[0].id
