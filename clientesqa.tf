@@ -19,9 +19,9 @@ provider "aws" {
 }
 
 # Recurso de grupo de seguridad
-resource "aws_security_group" "instance_security_group" {
-    name = "instance_security_group"
-    description = "Security group for EC2 instance"
+resource "aws_security_group" "instance_security_group_custom" {
+    name = "instance_security_group_custom"
+    description = "Custom security group for EC2 instance"
 
     ingress {
         from_port = 22
@@ -67,7 +67,7 @@ resource "aws_instance" "clientesqa_instance" {
 
     # Asociar la instancia con el grupo de seguridad creado
     vpc_security_group_ids = [
-        aws_security_group.instance_security_group.id
+        aws_security_group.instance_security_group_custom.id
     ]
 
     # Etiquetas para identificar la instancia
