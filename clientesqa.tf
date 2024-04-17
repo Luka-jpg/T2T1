@@ -20,15 +20,15 @@ provider "aws" {
 
 # Verificación de grupo de seguridad existente
 data "aws_security_group" "existing_sg" {
-    name = "instance_security_group_custom"
-    vpc_id = "tu-vpc-id"  # Asegúrate de usar el ID correcto de tu VPC
+    name = "instance_security_group"
+    vpc_id = "vpc-06b6fdb4667263281"  # Reemplaza con tu VPC ID correcto
 }
 
 # Recurso de grupo de seguridad (solo si no existe)
-resource "aws_security_group" "instance_security_group_custom" {
+resource "aws_security_group" "instance_security_group" {
     count = data.aws_security_group.existing_sg.id == null ? 1 : 0  # Solo crea el grupo de seguridad si no existe
 
-    name = "instance_security_group_custom"
+    name = "instance_security_group"
     description = "Custom security group for EC2 instance"
 
     ingress {
@@ -77,7 +77,7 @@ resource "aws_instance" "clientesqa_instance" {
     vpc_security_group_ids = data.aws_security_group.existing_sg.id != null ? [
         data.aws_security_group.existing_sg.id
     ] : [
-        aws_security_group.instance_security_group_custom[0].id
+        aws_security_group.instance_security_group[0].id
     ]
 
     # Etiquetas para identificar la instancia
