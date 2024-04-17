@@ -12,74 +12,74 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.7.5
-        terraform_wrapper: false
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.5
+          terraform_wrapper: false
 
-    - name: Terraform Init
-      run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
-    - name: Terraform Apply      
-      run: terraform apply -auto-approve -var="aws_access_key=${{ env.AWS_ACCESS_KEY_ID }}" -var="aws_secret_key=${{ env.AWS_SECRET_ACCESS_KEY }}"
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var="aws_access_key=${{ env.AWS_ACCESS_KEY_ID }}" -var="aws_secret_key=${{ env.AWS_SECRET_ACCESS_KEY }}"
 
-    - name: Terraform Show      
-      run: terraform show
+      - name: Terraform Show
+        run: terraform show
 
-    - name: Export Output
-      id: tfo
-      run: |
-        echo "instance_ip=$(terraform output -raw instance_ip_clientesqa)" >> $GITHUB_OUTPUT
+      - name: Export Output
+        id: tfo
+        run: |
+          echo "instance_ip=$(terraform output -raw instance_ip_clientesqa)" >> $GITHUB_OUTPUT
 
-    - name: Login to Docker Hub
-      run: echo ${{ secrets.DOCKER }} | docker login -u lukitadiscc@gmail.com --password-stdin
-      
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag lukytast2/t2t1:K6  
-    
-    - name: Push the Docker image to Docker Hub
-      run: docker push lukytast2/t2t1:K6
+      - name: Login to Docker Hub
+        run: echo ${{ secrets.DOCKER }} | docker login -u lukitadiscc@gmail.com --password-stdin
 
-    - name: Install Docker and Configure Permissions
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ steps.tfo.outputs.instance_ip }}
-        username: ec2-user
-        key: ${{ secrets.CLIENTES_KEY }}
-        script: |
-          sudo yum install -y docker
-          sudo systemctl start docker
-          sudo systemctl enable docker
-          sudo usermod -aG docker ec2-user
-          sleep 10
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag lukytast2/t2t1:K6
 
-    - name: Pull Docker Image
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ steps.tfo.outputs.instance_ip }}
-        username: ec2-user
-        key: ${{ secrets.CLIENTES_KEY }}
-        script: |
-          sudo docker pull lukytast2/t2t1:K6
+      - name: Push the Docker image to Docker Hub
+        run: docker push lukytast2/t2t1:K6
 
-    - name: Run Docker Container
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ steps.tfo.outputs.instance_ip }}
-        username: ec2-user
-        key: ${{ secrets.CLIENTES_KEY }}
-        script: |
-          sudo docker run -d -p 8080:8080 lukytast2/t2t1:K6
+      - name: Install Docker and Configure Permissions
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ steps.tfo.outputs.instance_ip }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+            sudo yum install -y docker
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo usermod -aG docker ec2-user
+            sleep 10
 
-    - name: Docker ps
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ steps.tfo.outputs.instance_ip }}
-        username: ec2-user
-        key: ${{ secrets.CLIENTES_KEY }}
-        script: |
-          sudo docker ps
+      - name: Pull Docker Image
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ steps.tfo.outputs.instance_ip }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+            sudo docker pull lukytast2/t2t1:K6
+
+      - name: Run Docker Container
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ steps.tfo.outputs.instance_ip }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+            sudo docker run -d -p 8080:8080 lukytast2/t2t1:K6
+
+      - name: Docker ps
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ steps.tfo.outputs.instance_ip }}
+          username: ec2-user
+          key: ${{ secrets.CLIENTES_KEY }}
+          script: |
+            sudo docker ps
