@@ -34,7 +34,8 @@ jobs:
     - name: Export Output
       id: tfo
       run: | 
-         echo "instance_ip=$(terraform output -raw instance_ip_Pagos_qa)" >> $GITHUB_OUTPUT
+       echo "instance_ip=$(terraform output -raw instance_ip_clientesqa)" >> $GITHUB_OUTPUT
+
 
     - name: Login to Docker Hub
       run: echo ${{ secrets.DOCKER }} | docker login -u lukitadiscc@gmail.com --password-stdin
