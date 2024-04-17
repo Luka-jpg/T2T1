@@ -18,10 +18,10 @@ provider "aws" {
     secret_key = var.aws_secret_key
 }
 
-# Verifica si el grupo de seguridad ya existe
+# Verificación de grupo de seguridad existente
 data "aws_security_group" "existing_sg" {
     name = "instance_security_group_custom"
-    vpc_id = "tu-vpc-id"  # Asegúrate de que este sea el ID correcto de tu VPC
+    vpc_id = "tu-vpc-id"  # Asegúrate de usar el ID correcto de tu VPC
 }
 
 # Recurso de grupo de seguridad
