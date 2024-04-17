@@ -1,6 +1,17 @@
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
+# Declaración de variables
+variable "aws_access_key" {
+    type = string
+    sensitive = true
+    description = "AWS Access Key"
+}
 
+variable "aws_secret_key" {
+    type = string
+    sensitive = true
+    description = "AWS Secret Key"
+}
+
+# Proveedor de AWS
 provider "aws" {
     region = "us-east-1"
     access_key = var.aws_access_key
