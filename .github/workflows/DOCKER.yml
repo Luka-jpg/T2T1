@@ -1,6 +1,5 @@
 name: CLIENTES_QA
 
-
 on:
   workflow_dispatch:
 
@@ -33,9 +32,8 @@ jobs:
 
     - name: Export Output
       id: tfo
-      run: | 
-       echo "instance_ip=$(terraform output -raw instance_ip_clientesqa)" >> $GITHUB_OUTPUT
-
+      run: |
+        echo "instance_ip=$(terraform output -raw instance_ip_clientesqa)" >> $GITHUB_OUTPUT
 
     - name: Login to Docker Hub
       run: echo ${{ secrets.DOCKER }} | docker login -u lukitadiscc@gmail.com --password-stdin
@@ -44,30 +42,39 @@ jobs:
       run: docker build . --file Dockerfile --tag lukytast2/t2t1:K6  
     
     - name: Push the Docker image to Docker Hub
+      run: docker push lukytast2/t2t1:K6
 
-      run: | 
-          docker push lukytast2/t2t1:K6
-          docker pull lukytast2/t2t1:K6
-    - name: Install Docker y Start
+    - name: Install Docker and Configure Permissions
       uses: appleboy/ssh-action@master
       with:
         host: ${{ steps.tfo.outputs.instance_ip }}
         username: ec2-user
         key: ${{ secrets.CLIENTES_KEY }}
         script: |
-            sudo yum -y install docker
-            sudo systemctl start docker
-            
-    - name: Pull y run de Docker
+          sudo yum install -y docker
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          sudo usermod -aG docker ec2-user
+          sleep 10
+
+    - name: Pull Docker Image
       uses: appleboy/ssh-action@master
       with:
         host: ${{ steps.tfo.outputs.instance_ip }}
         username: ec2-user
         key: ${{ secrets.CLIENTES_KEY }}
         script: |
-             sudo docker pull lukytast2/t2t1:K6
-             sudo docker run -d -p 8080:8080 lukytast2/t2t1:K6
-      
+          sudo docker pull lukytast2/t2t1:K6
+
+    - name: Run Docker Container
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ steps.tfo.outputs.instance_ip }}
+        username: ec2-user
+        key: ${{ secrets.CLIENTES_KEY }}
+        script: |
+          sudo docker run -d -p 8080:8080 lukytast2/t2t1:K6
+
     - name: Docker ps
       uses: appleboy/ssh-action@master
       with:
@@ -75,4 +82,4 @@ jobs:
         username: ec2-user
         key: ${{ secrets.CLIENTES_KEY }}
         script: |
-             sudo docker ps
+          sudo docker ps
