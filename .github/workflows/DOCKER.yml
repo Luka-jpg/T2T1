@@ -1,12 +1,11 @@
 name: CLIENTES_QA
 
-
 on:
   workflow_dispatch:
 
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
   terraform:
@@ -26,27 +25,27 @@ jobs:
       run: terraform init
 
     - name: Terraform Apply      
-      run: terraform apply -auto-approve -var="aws_access_key=${{ env.AWS_ACCESS_KEY_ID }}" -var="aws_secret_key=${{ env.AWS_SECRET_ACCESS_KEY }}"
+      run: terraform apply -auto-approve -var="aws_access_key=${{ env.aws_access_key }}" -var="aws_secret_key=${{ env.aws_secret_key }}"
 
-    - name: Terraform Show      
+    - name: Terraform Show
       run: terraform show
 
     - name: Export Output
       id: tfo
-      run: | 
+      run: |
          echo "instance_ip=$(terraform output -raw instance_ip_clientesqa)" >> $GITHUB_OUTPUT
 
     - name: Login to Docker Hub
       run: echo ${{ secrets.DOCKER }} | docker login -u lukitadiscc@gmail.com --password-stdin
-      
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag lukytast2/t2t1:K6  
-    
-    - name: Push the Docker image to Docker Hub
 
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag lukytast2/t2t1:K6
+
+    - name: Push the Docker image to Docker Hub
       run: | 
           docker push lukytast2/t2t1:K6
           docker pull lukytast2/t2t1:K6
+
     - name: Install Docker y Start
       uses: appleboy/ssh-action@master
       with:
